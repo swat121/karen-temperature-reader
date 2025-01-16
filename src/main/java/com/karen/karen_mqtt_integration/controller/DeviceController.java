@@ -5,7 +5,6 @@ import com.karen.karen_mqtt_integration.service.DeviceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,12 +16,7 @@ public class DeviceController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Device> getDeviceById(@PathVariable Long id) {
-        Device device = deviceService.findDeviceById(id);
-        if (device != null) {
-            return new ResponseEntity<>(device, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+         return ResponseEntity.ok(deviceService.findDeviceById(id));
     }
 
     @GetMapping
@@ -38,21 +32,14 @@ public class DeviceController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Device> updateDevice(@PathVariable Long id, @RequestBody Device device) {
-        if (!deviceService.existsById(id)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-        device.setId(id);
-        Device updatedDevice = deviceService.saveDevice(device);
+        Device updatedDevice = deviceService.updateDevice(id, device);
         return ResponseEntity.ok(updatedDevice);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteDeviceById(@PathVariable Long id) {
-        if (!deviceService.existsById(id)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
         deviceService.deleteDeviceById(id);
-        return ResponseEntity.noContent().build(); // HTTP 204
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping

@@ -61,11 +61,11 @@ public class MQTTService {
         try {
             MQTTMessageDTO message = objectMapper.readValue(jsonMessage, MQTTMessageDTO.class);
 
-            Optional<Device> existingDevice = deviceService.findByMacAddress(message.getMacAddress());
+            boolean isDeviceExist = deviceService.existByMacAddress(message.getMacAddress());
 
             Device device = null;
-            if (existingDevice.isPresent()) {
-                device = existingDevice.get();
+            if (isDeviceExist) {
+                device = deviceService.findByMacAddress(message.getMacAddress());
                 System.out.println("Device already exists: " + device.getMacAddress());
             } else {
                 device = deviceService.saveDevice(Device.builder()

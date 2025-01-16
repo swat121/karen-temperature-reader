@@ -8,4 +8,6 @@ import java.util.Optional;
 public interface DeviceRepository extends JpaRepository<Device, Long> {
 
     Optional<Device> findByMacAddress(String macAddress);
+
+    boolean existsByMacAddress(String macAddress);
 }
