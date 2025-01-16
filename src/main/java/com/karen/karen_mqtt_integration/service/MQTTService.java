@@ -8,6 +8,7 @@ import com.karen.karen_mqtt_integration.entity.Sensor;
 import com.karen.karen_mqtt_integration.entity.SensorData;
 import org.eclipse.paho.client.mqttv3.*;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -22,13 +23,15 @@ public class MQTTService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-//    @Value("${mqtt.broker.url}")
+    @Value("${mqtt.broker.url}")
     private String brokerUrl = "tcp://192.168.50.166:1883";
 
-//    @Value("${mqtt.topic}")
+    @Value("${mqtt.topic}")
     private String topic = "test/esp32/demo";
 
     public MQTTService(DeviceService deviceService, SensorService sensorService, RequestService requestService, SensorDataService sensorDataService) {
+        System.out.println("MQTT Broker URL: " + brokerUrl);
+        System.out.println("MQTT Topic: " + topic);
         this.deviceService = deviceService;
         this.sensorService = sensorService;
         this.requestService = requestService;
