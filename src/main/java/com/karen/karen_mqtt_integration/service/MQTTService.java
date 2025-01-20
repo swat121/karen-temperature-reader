@@ -44,7 +44,10 @@ public class MQTTService {
         try {
             System.out.println("Connecting to MQTT broker: " + brokerUrl);
             MqttClient client = new MqttClient(brokerUrl, MqttClient.generateClientId());
-            client.connect();
+
+            MqttConnectOptions options = new MqttConnectOptions();
+            options.setCleanSession(true);
+            client.connect(options);
 
             client.subscribe(topic, (topic, message) -> {
                 String payload = new String(message.getPayload());
