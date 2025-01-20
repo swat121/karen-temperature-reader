@@ -2,12 +2,18 @@ package com.karen.karen_mqtt_integration.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.karen.karen_mqtt_integration.dto.MQTTMessageDTO;
+import com.karen.karen_mqtt_integration.dto.device.DeviceRequestDTO;
 import com.karen.karen_mqtt_integration.entity.Device;
 import com.karen.karen_mqtt_integration.entity.Request;
 import com.karen.karen_mqtt_integration.entity.Sensor;
 import com.karen.karen_mqtt_integration.entity.SensorData;
+import com.karen.karen_mqtt_integration.repo.DeviceRepository;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.eclipse.paho.client.mqttv3.*;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +22,8 @@ import java.util.Optional;
 @Service
 public class MQTTService {
 
-    private final DeviceService deviceService;
+    private final DeviceRepository deviceRepository;
+
     private final SensorService sensorService;
     private final RequestService requestService;
     private final SensorDataService sensorDataService;
@@ -29,10 +36,8 @@ public class MQTTService {
     @Value("${mqtt.topic}")
     private String topic = "test/esp32/demo";
 
-    public MQTTService(DeviceService deviceService, SensorService sensorService, RequestService requestService, SensorDataService sensorDataService) {
-        System.out.println("MQTT Broker URL: " + brokerUrl);
-        System.out.println("MQTT Topic: " + topic);
-        this.deviceService = deviceService;
+    public MQTTService(DeviceRepository deviceRepository, SensorService sensorService, RequestService requestService, SensorDataService sensorDataService) {
+        this.deviceRepository = deviceRepository;
         this.sensorService = sensorService;
         this.requestService = requestService;
         this.sensorDataService = sensorDataService;
@@ -64,14 +69,14 @@ public class MQTTService {
         try {
             MQTTMessageDTO message = objectMapper.readValue(jsonMessage, MQTTMessageDTO.class);
 
-            boolean isDeviceExist = deviceService.existByMacAddress(message.getMacAddress());
+            boolean isDeviceExist = deviceRepository.existsByMacAddress(message.getMacAddress());
 
             Device device = null;
             if (isDeviceExist) {
-                device = deviceService.findByMacAddress(message.getMacAddress());
+                device = deviceRepository.findByMacAddress(message.getMacAddress()).get();
                 System.out.println("Device already exists: " + device.getMacAddress());
             } else {
-                device = deviceService.saveDevice(Device.builder()
+                device = deviceRepository.save(Device.builder()
                         .macAddress(message.getMacAddress())
                         .build());
             }

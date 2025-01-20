@@ -1,5 +1,8 @@
 package com.karen.karen_mqtt_integration.controller;
 
+import com.karen.karen_mqtt_integration.dto.device.DeviceRequestDTO;
+import com.karen.karen_mqtt_integration.dto.device.DeviceResponseDTO;
+import com.karen.karen_mqtt_integration.dto.device.DeviceUpdateDTO;
 import com.karen.karen_mqtt_integration.entity.Device;
 import com.karen.karen_mqtt_integration.service.DeviceService;
 import lombok.RequiredArgsConstructor;
@@ -15,24 +18,24 @@ public class DeviceController {
     private final DeviceService deviceService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<Device> getDeviceById(@PathVariable Long id) {
+    public ResponseEntity<DeviceResponseDTO> getDeviceById(@PathVariable Long id) {
          return ResponseEntity.ok(deviceService.findDeviceById(id));
     }
 
     @GetMapping
-    public ResponseEntity<Iterable<Device>> getAllDevices() {
+    public ResponseEntity<Iterable<DeviceResponseDTO>> getAllDevices() {
         return ResponseEntity.ok(deviceService.findAllDevices());
     }
 
     @PostMapping
-    public ResponseEntity<Device> createDevice(@RequestBody Device device) {
-        Device createdDevice = deviceService.saveDevice(device);
+    public ResponseEntity<DeviceRequestDTO> createDevice(@RequestBody Device device) {
+        DeviceRequestDTO createdDevice = deviceService.saveDevice(device);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdDevice);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Device> updateDevice(@PathVariable Long id, @RequestBody Device device) {
-        Device updatedDevice = deviceService.updateDevice(id, device);
+    public ResponseEntity<DeviceUpdateDTO> updateDevice(@PathVariable Long id, @RequestBody Device device) {
+        DeviceUpdateDTO updatedDevice = deviceService.updateDevice(id, device);
         return ResponseEntity.ok(updatedDevice);
     }
 
