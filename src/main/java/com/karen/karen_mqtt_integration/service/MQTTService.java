@@ -2,18 +2,14 @@ package com.karen.karen_mqtt_integration.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.karen.karen_mqtt_integration.dto.MQTTMessageDTO;
-import com.karen.karen_mqtt_integration.dto.device.DeviceRequestDTO;
 import com.karen.karen_mqtt_integration.entity.Device;
 import com.karen.karen_mqtt_integration.entity.Request;
 import com.karen.karen_mqtt_integration.entity.Sensor;
 import com.karen.karen_mqtt_integration.entity.SensorData;
 import com.karen.karen_mqtt_integration.repo.DeviceRepository;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
+import com.karen.karen_mqtt_integration.repo.SensorRepository;
 import org.eclipse.paho.client.mqttv3.*;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -23,8 +19,8 @@ import java.util.Optional;
 public class MQTTService {
 
     private final DeviceRepository deviceRepository;
+    private final SensorRepository sensorRepository;
 
-    private final SensorService sensorService;
     private final RequestService requestService;
     private final SensorDataService sensorDataService;
 
@@ -36,9 +32,10 @@ public class MQTTService {
     @Value("${mqtt.topic}")
     private String topic = "test/esp32/demo";
 
-    public MQTTService(DeviceRepository deviceRepository, SensorService sensorService, RequestService requestService, SensorDataService sensorDataService) {
+    public MQTTService(DeviceRepository deviceRepository, SensorRepository sensorRepository, RequestService requestService, SensorDataService sensorDataService) {
         this.deviceRepository = deviceRepository;
-        this.sensorService = sensorService;
+        this.sensorRepository = sensorRepository;
+
         this.requestService = requestService;
         this.sensorDataService = sensorDataService;
         System.out.println("MQTTService created");
@@ -81,15 +78,16 @@ public class MQTTService {
                         .build());
             }
 
-            Optional<Sensor> existingSensor = sensorService.findByName(message.getSensor());
+            Optional<Sensor> existingSensor = sensorRepository.findByName(message.getSensor());
 
             Sensor sensor = null;
             if (existingSensor.isPresent()) {
                 sensor = existingSensor.get();
                 System.out.println("Sensor already exists: " + existingSensor.get().getName());
             } else {
-                sensor = sensorService.saveSensor(device.getId(), Sensor.builder()
+                sensor = sensorRepository.save(Sensor.builder()
                         .name(message.getSensor())
+                        .device(device)
                         .build()
                 );
             }
