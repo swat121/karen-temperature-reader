@@ -66,6 +66,7 @@ public class RequestService {
 
         return requests.stream()
                 .map(request -> new SensorDataResponseDTO(
+                        request.getRequestId(),
                         request.getDevice().getMacAddress(),
                         request.getSensor().getName(),
                         request.getSensorData().stream()

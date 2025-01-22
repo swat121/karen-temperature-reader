@@ -11,6 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SensorDataResponseDTO {
+    private String requestId;
     private String macAddress;
     private String sensorName;
     private List<SensorDataDTO> sensorData;
