@@ -27,14 +27,19 @@ public class DeviceController {
         return ResponseEntity.ok(deviceService.findAllDevices());
     }
 
+    @GetMapping("/{macAddress}")
+    public ResponseEntity<DeviceResponseDTO> getDeviceByMacAddress(@PathVariable String macAddress) {
+        return ResponseEntity.ok(deviceService.findByMacAddress(macAddress));
+    }
+
     @PostMapping
-    public ResponseEntity<DeviceRequestDTO> createDevice(@RequestBody Device device) {
-        DeviceRequestDTO createdDevice = deviceService.saveDevice(device);
+    public ResponseEntity<DeviceResponseDTO> createDevice(@RequestBody DeviceRequestDTO device) {
+        DeviceResponseDTO createdDevice = deviceService.saveDevice(device);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdDevice);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<DeviceUpdateDTO> updateDevice(@PathVariable Long id, @RequestBody Device device) {
+    public ResponseEntity<DeviceUpdateDTO> updateDevice(@PathVariable Long id, @RequestBody DeviceRequestDTO device) {
         DeviceUpdateDTO updatedDevice = deviceService.updateDevice(id, device);
         return ResponseEntity.ok(updatedDevice);
     }

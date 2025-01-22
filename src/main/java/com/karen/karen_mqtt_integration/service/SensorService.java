@@ -1,5 +1,6 @@
 package com.karen.karen_mqtt_integration.service;
 
+import com.karen.karen_mqtt_integration.dto.sensor.SensorRequestDTO;
 import com.karen.karen_mqtt_integration.dto.sensor.SensorResponseDTO;
 import com.karen.karen_mqtt_integration.entity.Device;
 import com.karen.karen_mqtt_integration.entity.Sensor;
@@ -27,15 +28,29 @@ public class SensorService {
     private final Type listType = new TypeToken<List<SensorResponseDTO>>() {
     }.getType();
 
-    public SensorResponseDTO saveSensor(Long deviceId, Sensor sensor) {
-        Device device = deviceRepository.findById(deviceId).orElseThrow(() -> new IllegalArgumentException("Device not found"));
+    public SensorResponseDTO saveSensor(Long deviceId, SensorRequestDTO sensor) {
+        Device device = deviceRepository.findById(deviceId)
+                .orElseThrow(() -> new IllegalArgumentException("Device with id: " + deviceId + "not found"));
 
-        sensor.setDevice(device);
-        return modelMapper.map(repository.save(sensor), SensorResponseDTO.class);
+        return modelMapper.map(repository.save(Sensor
+                .builder()
+                .name(sensor.getName())
+                .device(device)
+                .build()), SensorResponseDTO.class);
     }
 
     public SensorResponseDTO findByName(String name) {
-        return modelMapper.map(repository.findByName(name), SensorResponseDTO.class);
+        return modelMapper.map(repository.findByName(name)
+                .orElseThrow(() -> new IllegalArgumentException("Sensor with name: " + name + " not found")), SensorResponseDTO.class);
+    }
+
+    public Sensor findAndSaveSensor(Device device, String name) {
+        Optional<Sensor> sensor = repository.findByName(name);
+        return sensor.orElseGet(() -> repository.save(Sensor
+                .builder()
+                .name(name)
+                .device(device)
+                .build()));
     }
 
     public Iterable<SensorResponseDTO> findAllSensors() {
@@ -45,6 +60,10 @@ public class SensorService {
     public SensorResponseDTO findSensorById(Long id) {
         return modelMapper.map(repository.findById(id)
                 .orElseThrow(() -> new ApiRequestException(ErrorCode.ENTITY_NOT_FOUND, "Sensor with id: " + id + " not found")), SensorResponseDTO.class);
+    }
+
+    public boolean existsByName(String name) {
+        return repository.existsByName(name);
     }
 
     public void deleteSensorById(Long id) {

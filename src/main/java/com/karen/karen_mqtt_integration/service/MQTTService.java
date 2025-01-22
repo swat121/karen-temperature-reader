@@ -2,6 +2,10 @@ package com.karen.karen_mqtt_integration.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.karen.karen_mqtt_integration.dto.MQTTMessageDTO;
+import com.karen.karen_mqtt_integration.dto.device.DeviceRequestDTO;
+import com.karen.karen_mqtt_integration.dto.device.DeviceResponseDTO;
+import com.karen.karen_mqtt_integration.dto.sensor.SensorRequestDTO;
+import com.karen.karen_mqtt_integration.dto.sensor.SensorResponseDTO;
 import com.karen.karen_mqtt_integration.entity.Device;
 import com.karen.karen_mqtt_integration.entity.Request;
 import com.karen.karen_mqtt_integration.entity.Sensor;
@@ -10,6 +14,7 @@ import com.karen.karen_mqtt_integration.repo.DeviceRepository;
 import com.karen.karen_mqtt_integration.repo.SensorRepository;
 import org.eclipse.paho.client.mqttv3.*;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -18,13 +23,14 @@ import java.util.Optional;
 @Service
 public class MQTTService {
 
-    private final DeviceRepository deviceRepository;
-    private final SensorRepository sensorRepository;
+    private final DeviceService deviceService;
+    private final SensorService sensorService;
 
     private final RequestService requestService;
     private final SensorDataService sensorDataService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ModelMapper modelMapper = new ModelMapper();
 
     @Value("${mqtt.broker.url}")
     private String brokerUrl = "tcp://192.168.50.166:1883";
@@ -32,9 +38,9 @@ public class MQTTService {
     @Value("${mqtt.topic}")
     private String topic = "test/esp32/demo";
 
-    public MQTTService(DeviceRepository deviceRepository, SensorRepository sensorRepository, RequestService requestService, SensorDataService sensorDataService) {
-        this.deviceRepository = deviceRepository;
-        this.sensorRepository = sensorRepository;
+    public MQTTService(DeviceService deviceService, SensorService sensorService, RequestService requestService, SensorDataService sensorDataService) {
+        this.deviceService = deviceService;
+        this.sensorService = sensorService;
 
         this.requestService = requestService;
         this.sensorDataService = sensorDataService;
@@ -66,31 +72,9 @@ public class MQTTService {
         try {
             MQTTMessageDTO message = objectMapper.readValue(jsonMessage, MQTTMessageDTO.class);
 
-            boolean isDeviceExist = deviceRepository.existsByMacAddress(message.getMacAddress());
+            Device device = deviceService.findAndSaveDevice(message.getMacAddress());
 
-            Device device = null;
-            if (isDeviceExist) {
-                device = deviceRepository.findByMacAddress(message.getMacAddress()).get();
-                System.out.println("Device already exists: " + device.getMacAddress());
-            } else {
-                device = deviceRepository.save(Device.builder()
-                        .macAddress(message.getMacAddress())
-                        .build());
-            }
-
-            Optional<Sensor> existingSensor = sensorRepository.findByName(message.getSensor());
-
-            Sensor sensor = null;
-            if (existingSensor.isPresent()) {
-                sensor = existingSensor.get();
-                System.out.println("Sensor already exists: " + existingSensor.get().getName());
-            } else {
-                sensor = sensorRepository.save(Sensor.builder()
-                        .name(message.getSensor())
-                        .device(device)
-                        .build()
-                );
-            }
+            Sensor sensor = sensorService.findAndSaveSensor(device, message.getSensor());
 
             Request request = requestService.addRequest(device.getId(), sensor.getId(), Request.builder()
                     .requestId(message.getRequestId())

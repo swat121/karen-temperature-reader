@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,16 +26,31 @@ public class DeviceService {
     private final Type listType = new TypeToken<List<DeviceResponseDTO>>() {
     }.getType();
 
-    public DeviceRequestDTO saveDevice(Device device) {
-        return modelMapper.map(repository.save(device), DeviceRequestDTO.class);
+    public DeviceResponseDTO saveDevice(DeviceRequestDTO device) {
+        return modelMapper.map(repository.save(Device
+                .builder()
+                .macAddress(device.getMacAddress())
+                .build()), DeviceResponseDTO.class);
     }
 
-    public DeviceRequestDTO findByMacAddress(String macAddress) {
-        return modelMapper.map(repository.findByMacAddress(macAddress)
-                .orElseThrow(() -> new ApiRequestException(ErrorCode.ENTITY_NOT_FOUND, "Device with macAddress: " + macAddress + " not found")), DeviceRequestDTO.class);
+    public DeviceResponseDTO findByMacAddress(String macAddress) {
+        Device device = repository.findByMacAddress(macAddress)
+                .orElseThrow(() -> new ApiRequestException(
+                        ErrorCode.ENTITY_NOT_FOUND,
+                        "Device with macAddress: " + macAddress + " not found"
+                ));
+        return modelMapper.map(device, DeviceResponseDTO.class);
     }
 
-    public DeviceUpdateDTO updateDevice(Long id, Device device) {
+    public Device findAndSaveDevice(String macAddress) {
+        Optional<Device> device = repository.findByMacAddress(macAddress);
+        return device.orElseGet(() -> repository.save(Device
+                .builder()
+                .macAddress(macAddress)
+                .build()));
+    }
+
+    public DeviceUpdateDTO updateDevice(Long id, DeviceRequestDTO device) {
         Device existingDevice = repository.findById(id)
                 .orElseThrow(() -> new ApiRequestException(
                         ErrorCode.ENTITY_NOT_FOUND,
@@ -75,7 +91,7 @@ public class DeviceService {
         return repository.count();
     }
 
-    public boolean existByMacAddress(String macAddress) {
+    public boolean existsByMacAddress(String macAddress) {
         return repository.existsByMacAddress(macAddress);
     }
 
