@@ -32,7 +32,7 @@ public class Request {
     @JoinColumn(name = "device_id", nullable = false)
     private Device device;
 
-    @OneToMany(mappedBy = "request", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "request", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<SensorData> sensorData;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")

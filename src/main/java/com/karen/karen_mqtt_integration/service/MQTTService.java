@@ -2,23 +2,15 @@ package com.karen.karen_mqtt_integration.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.karen.karen_mqtt_integration.dto.MQTTMessageDTO;
-import com.karen.karen_mqtt_integration.dto.device.DeviceRequestDTO;
-import com.karen.karen_mqtt_integration.dto.device.DeviceResponseDTO;
-import com.karen.karen_mqtt_integration.dto.sensor.SensorRequestDTO;
-import com.karen.karen_mqtt_integration.dto.sensor.SensorResponseDTO;
 import com.karen.karen_mqtt_integration.entity.Device;
 import com.karen.karen_mqtt_integration.entity.Request;
 import com.karen.karen_mqtt_integration.entity.Sensor;
 import com.karen.karen_mqtt_integration.entity.SensorData;
-import com.karen.karen_mqtt_integration.repo.DeviceRepository;
-import com.karen.karen_mqtt_integration.repo.SensorRepository;
 import org.eclipse.paho.client.mqttv3.*;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 public class MQTTService {
@@ -76,7 +68,7 @@ public class MQTTService {
 
             Sensor sensor = sensorService.findAndSaveSensor(device, message.getSensor());
 
-            Request request = requestService.addRequest(device.getId(), sensor.getId(), Request.builder()
+            Request request = requestService.saveRequest(device.getId(), sensor.getId(), Request.builder()
                     .requestId(message.getRequestId())
                     .build());
 

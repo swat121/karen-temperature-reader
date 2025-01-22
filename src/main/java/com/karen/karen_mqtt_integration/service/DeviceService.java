@@ -1,8 +1,10 @@
 package com.karen.karen_mqtt_integration.service;
 
+import com.karen.karen_mqtt_integration.dto.device.DeviceDetailedResponseDTO;
 import com.karen.karen_mqtt_integration.dto.device.DeviceRequestDTO;
 import com.karen.karen_mqtt_integration.dto.device.DeviceResponseDTO;
 import com.karen.karen_mqtt_integration.dto.device.DeviceUpdateDTO;
+import com.karen.karen_mqtt_integration.dto.sensor.SensorResponseDTO;
 import com.karen.karen_mqtt_integration.entity.Device;
 import com.karen.karen_mqtt_integration.exception.ApiRequestException;
 import com.karen.karen_mqtt_integration.exception.ErrorCode;
@@ -99,4 +101,10 @@ public class DeviceService {
         return repository.existsById(id);
     }
 
+    public DeviceDetailedResponseDTO getDeviceWithSensors(Long id) {
+        Device device = repository.findById(id)
+                .orElseThrow(() -> new ApiRequestException(ErrorCode.ENTITY_NOT_FOUND, "Device not found"));
+
+        return modelMapper.map(device, DeviceDetailedResponseDTO.class);
+    }
 }

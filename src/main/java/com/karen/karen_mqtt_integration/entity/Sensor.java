@@ -26,6 +26,6 @@ public class Sensor {
     @JoinColumn(name = "device_id", nullable = false)
     private Device device;
 
-    @OneToMany(mappedBy = "sensor", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "sensor", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Request> requests;
 }

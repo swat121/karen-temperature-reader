@@ -1,5 +1,6 @@
 package com.karen.karen_mqtt_integration.controller;
 
+import com.karen.karen_mqtt_integration.dto.device.DeviceDetailedResponseDTO;
 import com.karen.karen_mqtt_integration.dto.device.DeviceRequestDTO;
 import com.karen.karen_mqtt_integration.dto.device.DeviceResponseDTO;
 import com.karen.karen_mqtt_integration.dto.device.DeviceUpdateDTO;
@@ -59,5 +60,10 @@ public class DeviceController {
     @GetMapping("/count")
     public ResponseEntity<Long> countDevices() {
         return ResponseEntity.ok(deviceService.countDevices());
+    }
+
+    @GetMapping("/details/{id}")
+    public ResponseEntity<DeviceDetailedResponseDTO> getDeviceWithSensors(@PathVariable Long id) {
+        return ResponseEntity.ok(deviceService.getDeviceWithSensors(id));
     }
 }

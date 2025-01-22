@@ -14,11 +14,11 @@ public class SensorDataService {
     private final SensorDataRepository repository;
     private final RequestRepository requestRepository;
 
-    public SensorData saveSensorData(Long requestId, SensorData data) {
+    public void saveSensorData(Long requestId, SensorData data) {
         Request request = requestRepository.findById(requestId).orElseThrow(() -> new IllegalArgumentException("Request not found"));
         data.setRequest(request);
 
-        return repository.save(data);
+        repository.save(data);
     }
 
     public Iterable<SensorData> findAllSensorData() {
