@@ -1,18 +1,62 @@
 version: '3.8'
 
 services:
+  emqx:
+    image: emqx/emqx:latest
+    container_name: emqx
+    restart: always
+    ports:
+      - "1883:1883"
+      - "8883:8883"
+      - "8083:8083"
+      - "8084:8084"
+      - "18083:18083"
+    volumes:
+      - ./emqx/act.conf:/opt/emqx/etc/act.conf
+    environment:
+      EMQX_NAME: emqx
+      EMQX_HOST: node1
+      EMQX_LISTENER_TCP_EXTERNAL: 1883
+      EMQX_LISTENER_SSL_EXTERNAL: 8883
+      EMQX_LISTENER_WS_EXTERNAL: 8083
+      EMQX_LISTENER_WSS_EXTERNAL: 8084
+
   postgres:
     image: postgres:15
-    container_name: mqtt_postgres
+    container_name: postgres
     restart: always
     environment:
-      POSTGRES_USER: postgres
+      POSTGRES_USER: karen-integration
       POSTGRES_PASSWORD: p@ssword
-      POSTGRES_DB: mqtt_db
+      POSTGRES_DB: home
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U karen-integration -d home" ]
+      interval: 30s
+      timeout: 30s
+      retries: 5
+
+  app:
+    build:
+      context: .
+    restart: always
+    container_name: karen-integration
+    environment:
+      MQTT_BROKER_URL: tcp://emqx:1883
+      MQTT_TOPIC: test/esp32/demo
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/home
+      SPRING_DATASOURCE_USERNAME: karen-integration
+      SPRING_DATASOURCE_PASSWORD: p@ssword
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      emqx:
+        condition: service_started
 
 volumes:
   postgres_data:
